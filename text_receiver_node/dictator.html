@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Send Text to Mac</title>
+    <meta charset="UTF-8">
+    <style>
+        /* Reset default margins and set font */
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            height: 100vh; /* Full viewport height */
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; /* Prevent body scrolling */
+        }
+
+        /* Toolbar at the top */
+        .toolbar {
+            display: flex;
+            align-items: center;
+            background-color: #f0f0f0;
+            padding: 20px 20px; /* Add vertical and horizontal padding */
+            box-sizing: border-box;
+            flex-shrink: 0; /* Prevent toolbar from shrinking */
+        }
+
+        .toolbar-button {
+            width: 150px;
+            height: 150px;
+            background-color: #2196F3;
+            border: none;
+            border-radius: 50%;
+            margin-right: 20px; /* Add margin between buttons */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 72px; /* Increase font size to scale with button */
+            cursor: pointer;
+            outline: none;
+            flex-shrink: 0; /* Prevent buttons from shrinking */
+        }
+
+        .toolbar-button.clear {
+            background-color: #f44336; /* Red color for clear button */
+        }
+
+        .toolbar-button:disabled {
+            background-color: #b0bec5; /* Grey color when disabled */
+            cursor: not-allowed;
+        }
+
+        /* Text area container */
+        .input-container {
+            flex: 1; /* Take up the remaining space */
+            padding: 10px;
+            box-sizing: border-box;
+            overflow: hidden; /* Prevent unwanted scrolling */
+        }
+
+        #textInput {
+            width: 100%;
+            height: 100%;
+            font-size: 36px;
+            padding: 10px;
+            box-sizing: border-box;
+            resize: none;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            overflow: auto; /* Allow scrolling within textarea if content overflows */
+        }
+
+        /* Style the placeholder text */
+        #textInput::placeholder {
+            font-size: 36px;
+            color: #999;
+        }
+
+        /* Responsive adjustments for smaller screens */
+        @media (max-width: 600px) {
+            .toolbar {
+                flex-wrap: wrap;
+                padding: 10px;
+                justify-content: center;
+            }
+
+            .toolbar-button {
+                width: 100px;
+                height: 100px;
+                font-size: 48px;
+                margin: 10px;
+            }
+
+            #textInput {
+                font-size: 24px;
+            }
+
+            #textInput::placeholder {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Toolbar at the top -->
+    <div class="toolbar">
+        <!-- Send Button -->
+        <button class="toolbar-button send" onclick="sendText();" id="sendButton">
+            &#10148; <!-- Unicode character for a right arrow -->
+        </button>
+        <!-- Clear Button -->
+        <button class="toolbar-button clear" onclick="clearText();" id="clearButton">
+            &#10006; <!-- Unicode character for an 'X' -->
+        </button>
+    </div>
+
+    <!-- Text area -->
+    <div class="input-container">
+        <form id="textForm" style="height: 100%;">
+            <textarea name="text" id="textInput" placeholder="Type your message here..." required
+                      inputmode="text"></textarea>
+            <!-- Hidden submit button -->
+            <button type="submit" style="display: none;">Send</button>
+        </form>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        function sendText() {
+            const textArea = document.getElementById('textInput');
+            const text = textArea.value;
+            const sendButton = document.getElementById('sendButton');
+
+            if (text.trim() === '') {
+                alert('Please enter some text before sending.');
+                return;
+            }
+
+            // Disable the send button to prevent multiple submissions
+            sendButton.disabled = true;
+
+            fetch('/submit', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    'text': text
+                })
+            })
+            .then(response => response.text())
+            .then(data => {
+                // Optionally handle response data
+                console.log('Success:', data);
+                // Clear the text area after sending
+                textArea.value = '';
+                // Re-enable the send button
+                sendButton.disabled = false;
+                // Move cursor focus back to the text area
+                textArea.focus();
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                // Re-enable the send button even if there's an error
+                sendButton.disabled = false;
+            });
+        }
+
+        function clearText() {
+            document.getElementById('textInput').value = '';
+        }
+
+        // Prevent the form from submitting traditionally
+        document.getElementById('textForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            sendText();
+        });
+
+        // Removed the Enter key event listener to allow new lines
+    </script>
+</body>
+</html>
