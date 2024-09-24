@@ -9,9 +9,9 @@ const server = http.createServer((req, res) => {
   const pathname = parsedUrl.pathname;
 
   if (req.method === 'GET') {
-    if (pathname === '/' || pathname === '/send_text.html') {
+    if (pathname === '/' || pathname === '/dictator.html') {
       // Serve the HTML page
-      const filePath = path.join(__dirname, 'send_text.html');
+      const filePath = path.join(__dirname, 'dictator.html');
       fs.readFile(filePath, 'utf8', (err, data) => {
         if (err) {
           res.writeHead(500, { 'Content-Type': 'text/plain' });
